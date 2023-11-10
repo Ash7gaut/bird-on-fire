@@ -1,3 +1,6 @@
+
+// Initialize variables
+
 let board;
 let boardWidth = 600;
 let boardHeight = 640;
@@ -58,17 +61,14 @@ let musicKarim = new Audio();
 musicKarim.src = "sounds/karim.mp3";
 musicKarim.loop = true;
 
-document.onkeydown = function(event) {
-  if (event.code === "Space") {
-    event.preventDefault();
-  }
-};
-
 let globalData; 
 
 let toppipeWidth = 50;  
 let bottompipeWidth = 50;
 let pipeOscillationSpeedON = 0.5;
+
+
+// Fetch data from database
 
 function getNames() {
   return new Promise((resolve, reject) => {
@@ -104,6 +104,7 @@ getNames()
 
 
 
+// Buttons music
 
 const button = document.querySelector("#onoff");
 
@@ -136,6 +137,7 @@ antonin.addEventListener("click", function () {
 });
 
 
+// Buttons restart and hard mode
 
 const restart = document.querySelector("#restart");
 
@@ -163,12 +165,9 @@ modeButton.addEventListener("click", function () {
 });
 
 
+// Variables pipes
 
-function randomHeight(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
-}
 
-// let toppipeWidth = 40;
 let toppipeHeight = randomHeight(100, 230);
 let toppipeSpeed = 0;
 let toppipeX = boardWidth;
@@ -186,6 +185,8 @@ let pipeOscillationSpeed = 0;
 let pipes = [];
 
 let gameIsRunning = false;
+
+ // function startGame, gameOver, resetGame
 
 function startGame() {
 
@@ -252,7 +253,6 @@ function gameOver() {
   }
   , 1100);
 
-  // Ajout d'un flou sur l'arrière-plan
   canvas.style.filter = "blur(5px)";
 
   toppipeSpeed = 0;
@@ -294,7 +294,11 @@ function resetGame() {
   score = 0;
 }
 
+// Technicals functions (initPipes, drawPipes, randomHeight)
 
+function randomHeight(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function initPipes() {
   pipes.push({
@@ -355,10 +359,13 @@ function drawPipes() {
   }
 }
 
+// Canvas
 
 const canvas = document.getElementById('background');
 const ctx = canvas.getContext('2d');
 
+
+// window.onload 
 
 window.onload = function () {
   
@@ -397,6 +404,7 @@ window.onload = function () {
 
   initPipes();
 
+  // randombackgrounds & selectedplayerimages
 
   let randomBackground = backgrounds[Math.floor(Math.random() * backgrounds.length)];
   context.drawImage(randomBackground, 0, 0, boardWidth, boardHeight);
@@ -426,34 +434,37 @@ window.onload = function () {
     });
   });
 
-
-
   drawPlayer1(player1);
 
-if(gameisOver) {
-  document.addEventListener("keydown", function (event) {
-    if (event.code === "Space") {
-      player1.velocity = 0;
-      player1.gravity = 0;
-    }
-  })
-} else {
-  document.addEventListener("keydown", function (event) {
-    if (event.code === "Space") {
-      player1.velocity = -10;
-    }
-  })
-}
+  // Event listener spacebar with jumps
+
+  if(gameisOver) {
+    document.addEventListener("keydown", function (event) {
+      if (event.code === "Space") {
+        player1.velocity = 0;
+        player1.gravity = 0;
+      }
+    })
+  } else {
+    document.addEventListener("keydown", function (event) {
+      if (event.code === "Space") {
+        player1.velocity = -10;
+      }
+    })
+  }
+
+  // Function to initialize the player
 
   function drawPlayer1(player) {
     context.drawImage(SelectedPlayerImg, player.x, player.y, player.width, player.height);
   }
+
+  // Function to check the collision between the player and the pipes
   
   function checkPlayerPipeCollisions(player, pipes) {
     for (let i = 0; i < pipes.length; i++) {
       let pipe = pipes[i];
   
-      // Vérifiez la collision avec le haut du tuyau
       if (
         player.x + player.width > pipe.toppipeX &&
         player.x < pipe.toppipeX + toppipeWidth &&
@@ -462,7 +473,6 @@ if(gameisOver) {
         return true;
       }
   
-      // Vérifiez la collision avec le bas du tuyau
       if (
         player.x + player.width > pipe.bottompipeX &&
         player.x < pipe.bottompipeX + bottompipeWidth &&
@@ -473,6 +483,8 @@ if(gameisOver) {
     }
     return false;
   }
+
+  // Function to draw the score
   
   function drawScore() {
     context.fillStyle = "white";
@@ -481,38 +493,42 @@ if(gameisOver) {
   }
 
 
-setInterval(function () {
-  
-  if(gameIsRunning) {
-  player1.velocity += player1.gravity;
-  player1.y += player1.velocity;
-  toppipeSpeed = 5;
-  bottompipeSpeed = 5;
-  backgroundX += -1;
+    // Function update
 
-  if( backgroundX < -boardWidth) {
-    backgroundX = 0;
-  }
+  setInterval(function () {
+    
+    if(gameIsRunning) {
+    player1.velocity += player1.gravity;
+    player1.y += player1.velocity;
+    toppipeSpeed = 5;
+    bottompipeSpeed = 5;
+    backgroundX += -1;
 
-  if (player1.y > boardHeight) {
-    gameOver();
-  }
+    if( backgroundX < -boardWidth) {
+      backgroundX = 0;
+    }
 
-  if (checkPlayerPipeCollisions(player1, pipes)) {
-    gameOver();
-  }
+    if (player1.y > boardHeight) {
+      gameOver();
+    }
+
+    if (checkPlayerPipeCollisions(player1, pipes)) {
+      gameOver();
+    }
 
 
+    for (let i = 0; i < pipes.length; i++) {
+      let pipe = pipes[i];
 
-  for (let i = 0; i < pipes.length; i++) {
-    let pipe = pipes[i];
-
-    if (pipe.toppipeX + toppipeWidth < player1.x && !pipe.passed) {
-      score++;
-      pipe.passed = true;
+      if (pipe.toppipeX + toppipeWidth < player1.x && !pipe.passed) {
+        score++;
+        pipe.passed = true;
+      }
     }
   }
-}
+
+  // Let update the pipes, the score and the player
+
   context.drawImage(randomBackground, backgroundX, 0, boardWidth, boardHeight);
   context.drawImage(randomBackground, backgroundX + boardWidth, 0, boardWidth, boardHeight);
   drawPipes();
